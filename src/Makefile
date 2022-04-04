@@ -82,7 +82,7 @@ PhysiCell_pugixml.o PhysiCell_settings.o PhysiCell_geometry.o
 
 # put your custom objects here (they should be in the custom_modules directory)
 
-PhysiCell_custom_module_OBJECTS := custom.o mechanics.o
+PhysiCell_custom_module_OBJECTS := custom.o 
 
 pugixml_OBJECTS := pugixml.o
 
