@@ -170,12 +170,12 @@ class RunModel(QWidget):
                 # os.makedirs('output')
                 self.output_dir = self.config_tab.folder.text()
                 print("run_tab: self.output_dir = ",self.output_dir)
-                # os.system('rm -rf tmpdir*')
+                os.system('rm -rf tmpdir*')
 
                 #rwh: not allowed on Mac M1?
                 # os.system('rm -rf ' + self.output_dir)
                 # print("run_tab.py:  doing: mkdir ",self.output_dir)
-                # os.makedirs(self.output_dir)  # do 'mkdir output_dir'
+                os.makedirs(self.output_dir)  # do 'mkdir output_dir'
                 time.sleep(1)
 
             # write the default config file to tmpdir

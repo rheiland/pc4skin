@@ -47,6 +47,8 @@ class Vis(QWidget):
 
         self.animating_flag = False
 
+        self.fix_cmap_flag = False
+
         self.xml_root = None
         self.current_svg_frame = 0
         self.timer = QtCore.QTimer()
