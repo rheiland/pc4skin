@@ -109,7 +109,8 @@ class Vis(QWidget):
         # self.output_dir = "output"
         # self.output_dir = "../tmpdir"   # for nanoHUB
         # self.output_dir = "tmpdir"   # for nanoHUB
-        self.output_dir = "."   # for nanoHUB
+        self.output_dir = "."   # for nanoHUB (we chdir to tmpdir to run the executable)
+        self.output_dir = "tmpdir"   # for desktop
 
 
         # do in create_figure()?
