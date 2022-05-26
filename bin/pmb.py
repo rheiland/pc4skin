@@ -47,7 +47,8 @@ class PhysiCellXMLCreator(QWidget):
 
         self.studio_flag = studio_flag 
 
-        self.title_prefix = "PhysiCell Model Builder: "
+        # self.title_prefix = "PhysiCell Model Builder: "
+        self.title_prefix = "PhysiCell-HuBMAP skin model: "
         self.setWindowTitle(self.title_prefix)
 
         self.nanohub_flag = False
