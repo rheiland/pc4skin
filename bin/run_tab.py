@@ -9,7 +9,6 @@ Dr. Paul Macklin (macklinp@iu.edu)
 import sys
 import os
 import time
-import shutil
 from pathlib import Path
 from PyQt5 import QtCore, QtGui
 # from PyQt5.QtWidgets import *
@@ -24,27 +23,31 @@ class QHLine(QFrame):
         self.setFrameShadow(QFrame.Sunken)
 
 class RunModel(QWidget):
-    def __init__(self, nanohub_flag, tab_widget):
+    def __init__(self, nanohub_flag, tab_widget, download_menu):
         super().__init__()
 
         self.nanohub_flag = nanohub_flag
         self.tab_widget = tab_widget
+        self.download_menu = download_menu
 
         #-------------------------------------------
         # used with nanoHUB app
         # self.nanohub = True
-        # following set in studio.py
+        # following set in pmb.py
         self.homedir = ''   
         # self.config_file = None
         self.tree = None
 
+        # these get set in pmb.py
         self.config_tab = None
         self.microenv_tab = None
         self.celldef_tab = None
         self.user_params_tab = None
+        self.vis_tab = None
+
+        self.output_dir = 'output'
 
         #-----
-        self.vis_tab = None
         self.sim_output = QWidget()
 
         self.main_layout = QVBoxLayout()
@@ -83,9 +86,9 @@ class RunModel(QWidget):
         self.exec_name = QLineEdit()
         if self.nanohub_flag:
             self.exec_name.setText('myproj')
+            self.exec_name.setEnabled(False)
         else:
-            self.exec_name.setText('../myproj')
-        # self.exec_name.setEnabled(False)
+            self.exec_name.setText('myproj')
         hbox.addWidget(self.exec_name)
 
         hbox.addWidget(QLabel("Config:"))
@@ -119,6 +122,7 @@ class RunModel(QWidget):
 #------------------------------
     def update_xml_from_gui(self):
         self.xml_root = self.tree.getroot()
+        print("\n\n =================================== run_tab.py: update_xml_from_gui(): self.xml_root = ",self.xml_root)
         self.config_tab.xml_root = self.xml_root
         self.microenv_tab.xml_root = self.xml_root
         self.celldef_tab.xml_root = self.xml_root
@@ -128,6 +132,13 @@ class RunModel(QWidget):
         self.microenv_tab.fill_xml()
         self.celldef_tab.fill_xml()
         self.user_params_tab.fill_xml()
+
+        # self.vis_tab.circle_radius = ET.parse(self.xml_root)
+        # tree = ET.parse(xml_file)
+        # root = tree.getroot()
+        # rwh - warning: assumes "R_circle" name won't change
+        # self.vis_tab.mech_voxel_size = float(self.xml_root.find(".//user_parameters//mechanics_voxel_size").text)
+        # print("\n\n------------- run_tab(): self.vis_tab.mech_voxel_size = ",self.vis_tab.mech_voxel_size)
         
     def message(self, s):
         self.text.appendPlainText(s)
@@ -143,23 +154,37 @@ class RunModel(QWidget):
 
             # remove any previous data
             # NOTE: this dir name needs to match the <folder>  in /data/<config_file.xml>
-            os.system('rm -rf tmpdir*')
+            if self.nanohub_flag:
+                os.system('rm -rf tmpdir*')
+            # else:
+                # os.system('rm -rf output*')
             time.sleep(1)
-            if os.path.isdir('tmpdir'):
+            if self.nanohub_flag and s.path.isdir('tmpdir'):
                 # something on NFS causing issues...
                 tname = tempfile.mkdtemp(suffix='.bak', prefix='tmpdir_', dir='.')
                 shutil.move('tmpdir', tname)
-            os.makedirs('tmpdir')
+            if self.nanohub_flag:
+                os.makedirs('tmpdir')
+            else:
+                # os.makedirs('output')
+                self.output_dir = self.config_tab.folder.text()
+                print("run_tab: self.output_dir = ",self.output_dir)
+                # os.system('rm -rf tmpdir*')
+
+                #rwh: not allowed on Mac M1?
+                # os.system('rm -rf ' + self.output_dir)
+                # print("run_tab.py:  doing: mkdir ",self.output_dir)
+                # os.makedirs(self.output_dir)  # do 'mkdir output_dir'
+                time.sleep(1)
 
             # write the default config file to tmpdir
             # new_config_file = "tmpdir/config.xml"  # use Path; work on Windows?
-            tdir = os.path.abspath('tmpdir')
+            if self.nanohub_flag:
+                tdir = os.path.abspath('tmpdir')
+            else:
+                tdir = os.path.abspath('.')
             new_config_file = Path(tdir,"config.xml")
-
-            # try copying the cells.csv file too
-            # new_csv_file = Path(self.homedir,"cells.csv")  # assumes cells.csv in root
-            # shutil.copyfile()
-
+            self.celldef_tab.config_path = new_config_file
             self.update_xml_from_gui()
 
             # write_config_file(new_config_file)  
@@ -173,8 +198,12 @@ class RunModel(QWidget):
             self.tree.write(new_config_file)  # saves modified XML to tmpdir/config.xml 
 
             # Operate from tmpdir. XML: <folder>,</folder>; temporary output goes here.  May be copied to cache later.
-            tdir = os.path.abspath('tmpdir')
-            os.chdir(tdir)   # run exec from here on nanoHUB
+
+            #rwh: for skin
+            if self.nanohub_flag:
+            # if True:
+                tdir = os.path.abspath('tmpdir')
+                os.chdir(tdir)   # run exec from here on nanoHUB
             # sub.update(tdir)
             # subprocess.Popen(["../bin/myproj", "config.xml"])
 
@@ -185,6 +214,8 @@ class RunModel(QWidget):
         if self.vis_tab:
             # self.vis_tab.reset_axes()
             self.vis_tab.reset_model_flag = True
+            self.vis_tab.reset_plot_range()
+            self.vis_tab.init_plot_range(self.config_tab) # heaven help the person who needs to understand this
 
         # for f in Path('./output').glob('*.*'):
         #     try:
@@ -207,7 +238,7 @@ class RunModel(QWidget):
             # self.vis_tab.setEnabled(True)
             # self.pStudio.enablePlotTab(True)
             # self.tab_widget.enablePlotTab(True)
-            self.tab_widget.setTabEnabled(5, True)
+            self.tab_widget.setTabEnabled(5, True)   # enable (allow to be selected) the Plot tab
             self.message("Executing process")
             self.p = QProcess()  # Keep a reference to the QProcess (e.g. on self) while it's running.
             self.p.readyReadStandardOutput.connect(self.handle_stdout)
@@ -250,8 +281,12 @@ class RunModel(QWidget):
         }
         state_name = states[state]
         self.message(f"State changed: {state_name}")
+        # self.message(f"Starting in a few secs...")   # only for "Starting"
 
     def process_finished(self):
         self.message("Process finished.")
         print("-- process finished.")
+        self.vis_tab.first_plot_cb("foo")
+        if self.nanohub_flag:
+            self.download_menu.setEnabled(True)
         self.p = None

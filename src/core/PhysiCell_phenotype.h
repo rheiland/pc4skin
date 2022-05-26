@@ -33,7 +33,7 @@
 #                                                                             #
 # BSD 3-Clause License (see https://opensource.org/licenses/BSD-3-Clause)     #
 #                                                                             #
-# Copyright (c) 2015-2021, Paul Macklin and the PhysiCell Project             #
+# Copyright (c) 2015-2022, Paul Macklin and the PhysiCell Project             #
 # All rights reserved.                                                        #
 #                                                                             #
 # Redistribution and use in source and binary forms, with or without          #
@@ -273,7 +273,11 @@ class Death
 	void trigger_death( int death_model_index ); // done 
 	
 	Cycle_Model& current_model( void ); // done
-	Death_Parameters& current_parameters( void ); // done 
+	Death_Parameters& current_parameters( void ); // done '
+
+	// ease of access
+	double& apoptosis_rate(void); 
+	double& necrosis_rate(void); 
 };
 
 class Volume
@@ -358,9 +362,16 @@ class Mechanics
  public:
 	double cell_cell_adhesion_strength; 
 	double cell_BM_adhesion_strength;
+
 	double cell_cell_repulsion_strength;
 	double cell_BM_repulsion_strength; 
-	
+
+	std::vector<double> cell_adhesion_affinities; 
+	double& cell_adhesion_affinity( std::string type_name ); // done 
+	void sync_to_cell_definitions(); // done 
+	void set_fully_heterotypic( void ); // done 
+	void set_fully_homotypic( Cell* pCell ); // done 
+
 	// this is a multiple of the cell (equivalent) radius
 	double relative_maximum_adhesion_distance; 
 	// double maximum_adhesion_distance; // needed? 
@@ -444,6 +455,12 @@ class Secretion
 	void set_all_uptake_to_zero( void ); // NEW
 	void scale_all_secretion_by_factor( double factor ); // NEW
 	void scale_all_uptake_by_factor( double factor ); // NEW
+
+	// ease of access
+	double& secretion_rate( std::string name ); 
+	double& uptake_rate( std::string name ); 
+	double& saturation_density( std::string name ); 
+	double& net_export_rate( std::string name );  	
 };
 
 class Cell_Functions
@@ -553,6 +570,9 @@ class Molecular
 		
 		// use this 
 		void sync_to_cell( Basic_Agent* pCell ); 
+
+		// ease of access 
+		double&  internalized_total_substrate( std::string name ); 
 		
 };
 
@@ -589,7 +609,8 @@ class Intracellular
 	virtual std::string get_state() = 0;  
 	
 	virtual Intracellular* clone() = 0;
-    
+	
+	virtual ~Intracellular(){};
 	
 
     // ================  specific to "maboss" ================

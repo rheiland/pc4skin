@@ -66,7 +66,7 @@
 */
 
 #include "./custom.h"
-using namespace PhysiCell;
+
 void create_cell_types( void )
 {
 	// set the random seed 
@@ -989,22 +989,7 @@ void SVG_plot_dark( std::string filename , Microenvironment& M, double z_slice ,
 		}
 	}
 	os << "  </g>" << std::endl; 
-
-	// os << " <g id=\"cylinders\">" << std::endl;
-	// int total_cylinders = all_cylinders.size();
-	// std::cout << "cylinders count " << total_cylinders << std::endl;
-	// for( int i=0 ; i < total_cylinders ; i++ )
-	// {
-	// 	std::cout << "cylinder " << i << std::endl;
-	// 	std::vector<double> vertex = all_cylinders.at(i)->vertices;
-	// 	Write_SVG_line(os, vertex[0], vertex[1], vertex[6], vertex[7],1,"black");
-	// 	Write_SVG_line(os, vertex[3], vertex[4], vertex[9], vertex[10],1,"black");
-
-	// }
-	// os << " </g>" << std::endl;
 	
-
-
 	// plot intersecting BM points
 	/* 
 	 for( int i=0 ; i < BasementMembraneNodes.size() ; i++ )
