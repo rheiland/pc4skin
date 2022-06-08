@@ -136,14 +136,14 @@ void create_cell_types( void )
 
 	// set up stem cells 
 
-	pCD = find_cell_definition( "stem");
-	pCD->functions.update_phenotype = stem_cell_phenotype; 
-	// pCD->phenotype.cell_transformations.transformation_rate("differentiated") = 0.0001; 
+	// pCD = find_cell_definition( "stem");
+	// pCD->functions.update_phenotype = stem_cell_phenotype; 
+	// // pCD->phenotype.cell_transformations.transformation_rate("differentiated") = 0.0001; 
 	
-	// set up differentiated cells 
+	// // set up differentiated cells 
 
-	pCD = find_cell_definition( "differentiated");
-	pCD->functions.update_phenotype = differentiated_cell_phenotype; 
+	// pCD = find_cell_definition( "differentiated");
+	// pCD->functions.update_phenotype = differentiated_cell_phenotype; 
 
 	// set up macrophages 
 
@@ -235,11 +235,15 @@ void setup_tissue( void )
 	// bacteria 
 	Cell_Definition* pCD = find_cell_definition("bacteria"); 
 	std::cout << "Placing cells of type " << pCD->name << " ... " << std::endl; 
+	double bXmin = -200;
+	double bXrange = 400; 
+	double bYmin = 200;
+	double bYrange = 200;
 	for( int n = 0 ; n < parameters.ints("number_of_bacteria") ; n++ )
 	{
 		std::vector<double> position = {0,0,0}; 
-		position[0] = Xmin + UniformRandom()*Xrange; 
-		position[1] = Ymin + UniformRandom()*Yrange; 
+		position[0] = bXmin + UniformRandom()*bXrange; 
+		position[1] = bYmin + UniformRandom()*bYrange; 
 		position[2] = Zmin + UniformRandom()*Zrange; 
 		
 		pC = create_cell( *pCD ); 
@@ -260,33 +264,33 @@ void setup_tissue( void )
 		pC->assign_position( position );
 	}
 
-	// stem cells 
-	pCD = find_cell_definition("stem"); 
-	std::cout << "Placing cells of type " << pCD->name << " ... " << std::endl; 
-	for( int n = 0 ; n < parameters.ints("number_of_stem_cells") ; n++ )
-	{
-		std::vector<double> position = {0,0,0}; 
-		position[0] = Xmin + UniformRandom()*Xrange; 
-		position[1] = Ymin + UniformRandom()*Yrange; 
-		position[2] = Zmin + UniformRandom()*Zrange; 
+	// // stem cells 
+	// pCD = find_cell_definition("stem"); 
+	// std::cout << "Placing cells of type " << pCD->name << " ... " << std::endl; 
+	// for( int n = 0 ; n < parameters.ints("number_of_stem_cells") ; n++ )
+	// {
+	// 	std::vector<double> position = {0,0,0}; 
+	// 	position[0] = Xmin + UniformRandom()*Xrange; 
+	// 	position[1] = Ymin + UniformRandom()*Yrange; 
+	// 	position[2] = Zmin + UniformRandom()*Zrange; 
 		
-		pC = create_cell( *pCD ); 
-		pC->assign_position( position );
-	}
+	// 	pC = create_cell( *pCD ); 
+	// 	pC->assign_position( position );
+	// }
 
-	// differentiated cells 
-	pCD = find_cell_definition("differentiated"); 
-	std::cout << "Placing cells of type " << pCD->name << " ... " << std::endl; 
-	for( int n = 0 ; n < parameters.ints("number_of_differentiated_cells") ; n++ )
-	{
-		std::vector<double> position = {0,0,0}; 
-		position[0] = Xmin + UniformRandom()*Xrange; 
-		position[1] = Ymin + UniformRandom()*Yrange; 
-		position[2] = Zmin + UniformRandom()*Zrange; 
+	// // differentiated cells 
+	// pCD = find_cell_definition("differentiated"); 
+	// std::cout << "Placing cells of type " << pCD->name << " ... " << std::endl; 
+	// for( int n = 0 ; n < parameters.ints("number_of_differentiated_cells") ; n++ )
+	// {
+	// 	std::vector<double> position = {0,0,0}; 
+	// 	position[0] = Xmin + UniformRandom()*Xrange; 
+	// 	position[1] = Ymin + UniformRandom()*Yrange; 
+	// 	position[2] = Zmin + UniformRandom()*Zrange; 
 		
-		pC = create_cell( *pCD ); 
-		pC->assign_position( position );
-	}
+	// 	pC = create_cell( *pCD ); 
+	// 	pC->assign_position( position );
+	// }
 
 	// macrophages 
 	pCD = find_cell_definition("macrophage"); 
@@ -654,8 +658,8 @@ void stem_cell_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 
 	// sample contacts 
 
-	static int stem_type = find_cell_definition( "stem")->type; 
-	static int diff_type = find_cell_definition( "differentiated")->type; 
+	// static int stem_type = find_cell_definition( "stem")->type; 
+	// static int diff_type = find_cell_definition( "differentiated")->type; 
 	static int bacteria_type = find_cell_definition( "bacteria")->type; 
 
 	int num_stem = 0; 
@@ -669,10 +673,10 @@ void stem_cell_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 		{ num_dead++; }
 		else
 		{ 
-			if( pC->type == stem_type )
-			{ num_stem++; }
-			if( pC->type == num_differentiated )
-			{ num_differentiated++; }
+			// if( pC->type == stem_type )
+			// { num_stem++; }
+			// if( pC->type == num_differentiated )
+			// { num_differentiated++; }
 			if( pC->type == bacteria_type )
 			{ num_bacteria++; }
 		}
@@ -687,7 +691,7 @@ void stem_cell_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 	double signal = num_stem; 
 	double half_max = stem_diff_halfmax; // 0.1; 
 	double hill = Hill_response_function( signal, half_max , 1.5 ); 
-	phenotype.cell_transformations.transformation_rates[diff_type] = base_val + (max_val-base_val)*hill; 
+	// phenotype.cell_transformations.transformation_rates[diff_type] = base_val + (max_val-base_val)*hill; 
 
 	// contact with a differentiated cell reduces proliferation 
 	// high rate of proliferation unless in contact with a differentiated cell 
